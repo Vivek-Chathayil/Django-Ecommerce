@@ -1,0 +1,87 @@
+{% extends 'eshop/main.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="box-element">
+            <h3>Order History</h3>
+            <hr>
+            
+            {% if orders %}
+                {% for order in orders %}
+                <div class="box-element" style="margin-bottom: 20px;">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5>Order #{{ order.id }}</h5>
+                            <p><strong>Date:</strong> {{ order.date_ordered|date:"F d, Y H:i" }}</p>
+                            <p><strong>Status:</strong> 
+                                {% if order.complete %}
+                                    <span class="badge badge-success">Completed</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Processing</span>
+                                {% endif %}
+                            </p>
+                            {% if order.transaction_id %}
+                                <p><strong>Transaction ID:</strong> {{ order.transaction_id }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <h4><strong>Total: ₹{{ order.get_cart_total|floatformat:2 }}</strong></h4>
+                            <p>Items: {{ order.get_cart_items }}</p>
+                            {% if order.shipping %}
+                                <span class="badge badge-info">Shipping Required</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Digital Order</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6>Items Ordered:</h6>
+                    {% for item in order.orderitem_set.all %}
+                    <div class="cart-row">
+                        <div style="flex:2">
+                            <img class="row-image" src="{{ item.product.imageURL }}" alt="{{ item.product.name }}">
+                        </div>
+                        <div style="flex:2">
+                            <p><strong>{{ item.product.name }}</strong></p>
+                        </div>
+                        <div style="flex:1">
+                            <p>₹{{ item.product.price|floatformat:2 }}</p>
+                        </div>
+                        <div style="flex:1">
+                            <p>x{{ item.quantity }}</p>
+                        </div>
+                        <div style="flex:1">
+                            <p><strong>₹{{ item.get_total|floatformat:2 }}</strong></p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if order.shipping %}
+                        {% for address in order.shippingaddress_set.all %}
+                        <hr>
+                        <h6>Shipping Address:</h6>
+                        <p>
+                            {{ address.address }}<br>
+                            {{ address.city }}, {{ address.state }} {{ address.zipcode }}
+                        </p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center">
+                    <h5>No orders found</h5>
+                    <p>You haven't placed any orders yet.</p>
+                    <a href="{% url 'store' %}" class="btn btn-primary">Start Shopping</a>
+                </div>
+            {% endif %}
+            
+            <div class="text-center">
+                <a href="{% url 'store' %}" class="btn btn-outline-secondary">Continue Shopping</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

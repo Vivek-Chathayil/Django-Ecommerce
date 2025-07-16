@@ -1,0 +1,32 @@
+{% extends 'eshop/main.html' %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="box-element">
+                <h3 class="text-center">Product Details</h3>
+                <hr>
+                
+                {% if product %}
+                    <div class="product-detail">
+                        <img src="{{ product.imageURL }}" alt="{{ product.name }}" class="img-fluid mb-3">
+                        <h4>{{ product.name }}</h4>
+                        <p>{{ product.description }}</p>
+                        <h5>Price: ₹{{ product.price|floatformat:2 }}</h5>
+                        
+                        <button data-product="{{ product.id }}" data-action="add" class="btn btn-success add-btn update-cart">Add to Cart</button>
+                    </div>
+                {% else %}
+                    <p class="text-center">Product not found.</p>
+                {% endif %}
+                
+                <hr>
+                <div class="text-center">
+                    <a href="{% url 'store' %}" class="btn btn-outline-secondary">Back to Store</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

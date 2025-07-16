@@ -1,0 +1,150 @@
+{% extends 'eshop/main.html' %}
+{% load static %}
+{% block content %}
+     <div class="row">
+		<div class="col-lg-6">
+			<div class="box-element" id="form-wrapper">
+				<form id="form" method="POST" action="{% url 'process_order' %}">
+					{% csrf_token %}
+					<div id="user-info">
+						<div class="form-field">
+							<input required class="form-control" type="text" name="name" placeholder="Name..">
+						</div>
+						<div class="form-field">
+							<input required class="form-control" type="email" name="email" placeholder="Email..">
+						</div>
+					</div>
+					
+					<div id="shipping-info">
+						<hr>
+						<p>Shipping Information:</p>
+						<hr>
+						<div class="form-field">
+							<input class="form-control" type="text" name="address" placeholder="Address..">
+						</div>
+						<div class="form-field">
+							<input class="form-control" type="text" name="city" placeholder="City..">
+						</div>
+						<div class="form-field">
+							<input class="form-control" type="text" name="state" placeholder="State..">
+						</div>
+						<div class="form-field">
+							<input class="form-control" type="text" name="zipcode" placeholder="Zip code..">
+						</div>
+						<div class="form-field">
+							<input class="form-control" type="text" name="country" placeholder="Country.." value="India">
+						</div>
+					</div>
+
+					<hr>
+					<div class="form-field">
+						<label><strong>Payment Method:</strong></label>
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
+							<label class="form-check-label" for="cod">
+								Cash on Delivery
+							</label>
+						</div>
+						<small class="text-muted">You will pay when your order is delivered to you.</small>
+					</div>
+					<hr>
+					<input id="form-button" class="btn btn-success btn-block" type="submit" value="Place Order">
+				</form>
+			</div>
+
+			<br>
+			<div class="box-element hidden" id="payment-info">
+				<div class="text-center">
+					<h3 class="text-success">Order Placed Successfully!</h3>
+					<p class="lead">Thank you for your order!</p>
+					<p>Payment Method: <strong>Cash on Delivery</strong></p>
+					<p>You will pay when your order is delivered.</p>
+					<hr>
+					<a href="{% url 'store' %}" class="btn btn-primary">Continue Shopping</a>
+					{% if user.is_authenticated %}
+						<a href="{% url 'order_history' %}" class="btn btn-secondary">View Order History</a>
+					{% endif %}
+				</div>
+			</div>
+			
+		</div>
+
+		<div class="col-lg-6">
+			<div class="box-element">
+				<a class="btn btn-outline-dark" href="{% url 'cart' %}">&#x2190; Back to Cart</a>
+				<hr>
+				<h3>Order Summary</h3>
+				<hr>
+				{% for item in items %}
+				<div class="cart-row">
+					<div style="flex:2"><img class="row-image" src="{{item.product.imageURL}}"></div>
+					<div style="flex:2"><p>{{item.product.name}}</p></div>
+					<div style="flex:1"><p>₹{{item.product.price|floatformat:2}}</p></div>
+					<div style="flex:1"><p>x{{item.quantity}}</p></div>
+				</div>
+				{% endfor %}
+				<h5>Items: {{order.get_cart_items}}</h5>
+				<h5>Total: ₹{{order.get_cart_total|floatformat:2}}</h5>
+				<hr>
+				<div class="alert alert-info">
+					<strong>Payment Method:</strong> Cash on Delivery<br>
+					<small>You will pay the above amount when your order is delivered.</small>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		var total = '{{order.get_cart_total}}'
+		var form = document.getElementById('form')
+		
+		form.addEventListener('submit', function(e){
+			e.preventDefault()
+			console.log('Form submitted...')
+			document.getElementById('form-button').classList.add('hidden');
+			document.getElementById('payment-info').classList.remove('hidden')
+			submitFormData()
+		})
+		
+		function submitFormData(){
+			console.log('Payment button clicked')
+			var userFormData = {
+				'name': null,
+				'email': null,
+				'total': total,
+			}
+			
+			var shippingInfo = {
+				'address': null,
+				'city': null,
+				'state': null,
+				'zipcode': null,
+				'country': null,
+			}
+			
+			shippingInfo.address = form.address.value
+			shippingInfo.city = form.city.value
+			shippingInfo.state = form.state.value
+			shippingInfo.zipcode = form.zipcode.value
+			shippingInfo.country = form.country.value
+			
+			userFormData.name = form.name.value
+			userFormData.email = form.email.value
+			
+			var url = "/process_order/"
+			fetch(url, {
+				method:'POST',
+				headers:{
+					'Content-Type':'application/json',
+					'X-CSRFToken':csrftoken,
+				}, 
+				body:JSON.stringify({'form':userFormData, 'shipping':shippingInfo}),
+			})
+			.then((response) => response.json())
+			.then((data) => {
+				console.log('Success:', data);
+				alert('Order placed successfully! You will pay cash on delivery.');
+			});
+		}
+	</script>
+{% endblock content %}
